@@ -1,0 +1,36 @@
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Python shenanigans
+__pycache__/
+*.py[cod]
+*$py.class
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage_html/
+init-db.sh
+run-tests.sh
+
+# Build stuff
+dist/
+build/
+*.egg-info/
+
+# Personal
+to_do.txt
+env.sh

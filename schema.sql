@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS page;
+
+CREATE TABLE page (
+  title VARCHAR(1024) PRIMARY KEY,
+  views INTEGER,
+  is_tweeted BOOLEAN NOT NULL DEFAULT FALSE,
+  is_availabity_checked BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+
