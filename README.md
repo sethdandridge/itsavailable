@@ -1,6 +1,3 @@
-
-
-
 # @itsavailable
 Bot that tweets unregistered .com domains
 
@@ -14,7 +11,7 @@ Gets eligible domains from 3 sources:
 Python3.6+
 
 ## Install
-- Create environmental variables with your Twitter API credentials
+- Declare environmental variables with your Twitter API credentials
 - pip install -r requirements.txt
 - python3.6 itsavailable.py
 
@@ -22,4 +19,4 @@ Python3.6+
 - The domain availability logic can be tricked if the words "No match" are anywhere in the WHOIS record
 - Wikipedia hashtags are sourced from the most-visited articles which contain a link to article being tweeted and are not always relevant
 - No logic for handling Twitter streaming API failures
-- God forbid another reply bot ever sends an @ mention and causes an infinite loop
+- God forbid another reply bot @ mentions this causing an infinite loop

@@ -26,8 +26,8 @@ class NYTListener(tweepy.StreamListener):
 
     def on_status(self, status):
         if status.user.id != NYT_TWITTER_ID: 
-            return
-        elif set(status.text) - valid_domain_chars:
+            logging.info(f'nyt: {status.text} (not from nyt account)')
+        elif set(status.text) - self.valid_domain_chars:
             logging.info(f'nyt: {status.text} contains invalid characters')
         elif len(status.text) > 63:
             logging.info(f'nyt: {status.text} is too long')
