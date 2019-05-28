@@ -24,6 +24,10 @@ class MentionListener(tweepy.StreamListener):
         self.api = api
 
     def on_status(self, status):
+    
+        if status.entities['urls']:
+            logging.info(f"{status.text} contains a URL")
+            return
 
         request_string = '-'.join([t for t in status.text.split() if '@' not in t])
 
@@ -39,9 +43,14 @@ class MentionListener(tweepy.StreamListener):
         tweet_text = f"@{status.user.screen_name} {response}"
         self.api.update_status(tweet_text, in_reply_to_status_id=status.id)
 
-        logging.info(f"tweeting {tweet_text}")
+        logging.info(f"mention: tweeting {tweet_text}")
 
 def run(api):
-    logging.info("Mention thread starting")
-    stream = tweepy.Stream(auth = api.auth, listener=MentionListener(api))
-    stream.filter(track=['@itsavailable'])
+    logging.info("mention: thread starting")
+    while True:
+        try:
+            stream = tweepy.Stream(auth=api.auth, listener=MentionListener(api))
+            stream.filter(track=['@itsavailable'])
+        except Exception as msg:
+            logging.error(f"mention: restarting {msg}")
+            continue

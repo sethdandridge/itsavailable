@@ -17,12 +17,12 @@ from psycopg2.extras import execute_values
 
 def tweet(api, domain, entry, count, hashtags):
     #special case because twitter doesn't like en dashes
-    resource = entry.replace("–", "%E2%80%93")
+    # resource = entry.replace("–", "%E2%80%93")
     tweet_text = f"{domain}․com https://en.wikipedia.org/wiki/{resource}{hashtags}" #special . in .com
     try: 
         status = api.update_status(tweet_text)
     except Exception as e:
-        logging.error(f'error tweeting {tweet_text} ({count})')
+      logging.error(f'error tweeting {tweet_text} ({count})')
         logging.error(e)
     else:
         logging.info(f'successfully tweeted {tweet_text} ({count})')

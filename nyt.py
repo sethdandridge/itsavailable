@@ -43,6 +43,11 @@ class NYTListener(tweepy.StreamListener):
                 logging.info(f"nyt: tweeting {tweet_text}")
 
 def run(api):
-    logging.info("NYT thread starting")
-    stream = tweepy.Stream(auth=api.auth, listener=NYTListener(api))
-    stream.filter(follow=[str(NYT_TWITTER_ID)])
+    logging.info("nyt: thread starting")
+    while True:
+        try:
+            stream = tweepy.Stream(auth=api.auth, listener=NYTListener(api))
+            stream.filter(follow=[str(NYT_TWITTER_ID)])
+        except Exception as msg:
+            logging.error(f"nyt: restarting {msg}")
+            continue
