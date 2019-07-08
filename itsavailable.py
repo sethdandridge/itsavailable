@@ -19,7 +19,7 @@ if __name__ == "__main__":
     TOKEN_SECRET = os.environ['ITSAVAILABLE_TOKEN_SECRET']
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(TOKEN_KEY, TOKEN_SECRET)
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
     # Start all the threads
     wikipedia_thread = threading.Thread(target=wikipedia.run, args=(api,))

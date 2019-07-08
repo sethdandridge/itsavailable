@@ -25,7 +25,8 @@ class NYTListener(tweepy.StreamListener):
         self.valid_domain_chars = set(string.ascii_letters + string.digits + '-')
 
     def on_status(self, status):
-        if status.user.id != NYT_TWITTER_ID: 
+        if status.user.id != NYT_TWITTER_ID:
+            return 
             logging.info(f'nyt: {status.text} (not from nyt account)')
         elif set(status.text) - self.valid_domain_chars:
             logging.info(f'nyt: {status.text} contains invalid characters')

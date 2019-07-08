@@ -16,41 +16,53 @@ import psycopg2
 from psycopg2.extras import execute_values
 
 def tweet(api, domain, entry, count, hashtags):
-    #special case because twitter doesn't like en dashes
+    # special case because twitter doesn't like en dashes
     # resource = entry.replace("–", "%E2%80%93")
-    tweet_text = f"{domain}․com https://en.wikipedia.org/wiki/{resource}{hashtags}" #special . in .com
+    tweet_text = f"{domain}․com https://en.wikipedia.org/wiki/{entry}{hashtags}" #special . in .com
     try: 
         status = api.update_status(tweet_text)
     except Exception as e:
-      logging.error(f'error tweeting {tweet_text} ({count})')
+        logging.error(f'error tweeting {tweet_text} ({count})')
         logging.error(e)
     else:
         logging.info(f'successfully tweeted {tweet_text} ({count})')
 
-def is_title_valid(title):
-    if (title == 'Main_Page' or
-            title == '-' or
-            '–' in title or
-            '—' in title or
-            title.startswith('List') or
-            title.startswith('File:') or
-            title.startswith('Special:') or
-            title.startswith('Talk:') or
-            title.startswith('Help:') or
-            title.startswith('Category:') or
-            title.startswith('Wikipedia:') or
-            title.startswith('Portal:') or
-            title.startswith('Template:') or
-            title.startswith('File_talk:') or
-            title.startswith('User:') or
-            title[:4].isdigit() or
-            len(title) >= 42 or
-            len(title.split('_')) > 4 or
-            'of' in title.split('_')
-        ):
-        return False
+SPECIAL_PAGE_PREFIXES = (
+    'Main_Page',
+    'List',
+    'File:',
+    'Special:',
+    'Talk:',
+    'Help:',
+    'Category:',
+    'Wikipedia:',
+    'Portal:',
+    'Template:',
+    'File_talk:',
+    'User:',
+)
 
-    return True
+def is_title_valid(title):
+    # no special pages like Talk pages
+    if title.startswith(SPECIAL_PAGE_PREFIXES):
+        return False
+    # Twitter urls don't play well with dashes
+    elif title == '-' or '–' in title or '—' in title:
+        return False
+    # Articles that start with a year make boring domains
+    elif title[:4].isdigit():
+        return False
+    # Article names that are too long make boring domains
+    elif len(title) >= 42:
+        return False
+    # Article names that contain too many words make boring domains
+    elif len(title.split('_')) > 4:
+        return False
+    # Article titles that contain the word 'of' make boring domains
+    elif 'of' in title.split('_'):
+        return False
+    else: 
+        return True
 
 def is_available(domain):
     if len(domain) > 63:
@@ -116,17 +128,16 @@ def get_last_hour_pageview_url():
     return most_recent_log_url
 
 def download_logfile(most_recent_log_url):
-    logging.info(f'downloading {most_recent_log_url}')
-    r = requests.get(most_recent_log_url)
-    logfile = gzip.decompress(r.content).decode('utf-8')
+    logfile = requests.get(most_recent_log_url)
+    logfile = gzip.decompress(logfile.content).decode('utf-8')
 
-    logging.info(f'processing {most_recent_log_url}')
     c = Counter()
     for line in logfile.splitlines():
         if line.startswith('en ') or line.startswith('en.m '):
             try:
                 domain_code, page_title, count_views, _ = line.split()
-                c[page_title] += int(count_views)
+                if int(count_views) >= 10:
+                    c[page_title] += int(count_views)
             except ValueError:
                 continue
     return c
@@ -175,21 +186,26 @@ def get_json(title):
     except:
         return None
 
+FORBIDDEN_CATEGORY_WORDS = [
+    'people',
+    'team',
+    'births',
+    'deaths',
+    'ships',
+    'mma',
+    'flight',
+    'ufc',
+    'days of the year'
+]
+
 def is_person_or_team(json):
-    forbidden_words = [
-        'people',
-        'team',
-        'births',
-        'deaths',
-        'ships',
-        'mma',
-        'ufc',
-        'days of the year'
-    ]
-    for category in json.get('categories', []):
-        for forbidden_word in forbidden_words:
-            if forbidden_word in category['title'].lower():
-                return True
+    categories = json.get('categories', [])
+    categories = [c['title'] for c in categories]
+    categories = " ".join(categories)
+    categories = categories.lower()
+    for forbidden_category_word in FORBIDDEN_CATEGORY_WORDS:
+        if forbidden_category_word in categories:
+            return True
     if 'team' in json.get('extract', ''):
         return True
     return False
@@ -203,7 +219,7 @@ def get_hashtags(json, title, pageviews):
     lowercase_hashtags = set()
     for link in sorted(links, key=lambda x: x['views'], reverse=True):
         linktitle = link['title'].replace(' ', '')
-        if set(linktitle).difference(set(string.ascii_letters)):
+        if set(linktitle) - set(string.ascii_letters):
             continue
         elif linktitle.lower().startswith("list"):
             continue
@@ -278,10 +294,10 @@ def run(api):
                 mark_as_tweeted(title)
                 tweet(api, _title_nospace, title, count, hashtags)
                 break
-            elif is_available(_title_hyphens):
-                mark_as_tweeted(title)
-                tweet(api, _title_hyphens, title, count, hashtags)
-                break
+            #elif is_available(_title_hyphens):
+            #    mark_as_tweeted(title)
+            #    tweet(api, _title_hyphens, title, count, hashtags)
+            #    break
             else:
                 mark_as_unavailable(title)
         next_run = random.randint(60*60*2, 60*60*3) 

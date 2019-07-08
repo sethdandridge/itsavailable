@@ -3,7 +3,6 @@ certifi==2019.3.9
 chardet==3.0.4
 idna==2.8
 oauthlib==3.0.1
-pkg-resources==0.0.0
 psycopg2-binary==2.8.2
 PySocks==1.7.0
 pythonwhois==2.4.3
