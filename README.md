@@ -1,6 +1,8 @@
 # @itsavailable
 Bot that tweets unregistered .com domains
 
+**Note to prospective employers:** This was written in 2019 and is no longer a fair representation of my abilities. I'm better now.
+
 ## Overview
 Gets eligible domains from 3 sources:
 1. Most-visited English-language Wikipedia pages in the past hour
